@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Mandalorian — Alquiler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0d0d0f;
+      color: #e8e8e8;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #222;
+    }
+
+    .logo-area h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-area p {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .price-tag {
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    .price-tag span {
+      color: #c9a84c;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat {
+      flex: 1;
+      background: #111114;
+      border: 1px solid #1e1e22;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .stat-label { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .stat-value { font-size: 22px; font-weight: 600; }
+    .stat-disponible .stat-value { color: #4caf7d; }
+    .stat-reservado  .stat-value { color: #c9a84c; }
+    .stat-alquilado  .stat-value { color: #e05555; }
+
+    .season-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #444;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 1.75rem 0 0.6rem;
+    }
+
+    .chapters { display: flex; flex-direction: column; gap: 4px; }
+
+    .chapter-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 16px;
+      background: #111114;
+      border: 1px solid #1e1e22;
+      border-radius: 8px;
+      transition: border-color 0.15s;
+    }
+
+    .chapter-row:hover { border-color: #2e2e34; }
+
+    .chapter-num {
+      font-size: 12px;
+      color: #333;
+      min-width: 24px;
+      font-weight: 500;
+    }
+
+    .chapter-info { flex: 1; min-width: 0; }
+
+    .chapter-title {
+      font-size: 14px;
+      color: #ddd;
+      font-weight: 500;
+    }
+
+    .chapter-sub {
+      font-size: 12px;
+      color: #444;
+      margin-top: 1px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .badge-disponible { background: #0f2a1a; color: #4caf7d; border: 1px solid #1a4a2e; }
+    .badge-reservado  { background: #2a1f00; color: #c9a84c; border: 1px solid #4a3800; }
+    .badge-alquilado  { background: #2a0f0f; color: #e05555; border: 1px solid #4a1a1a; }
+
+    .ttl {
+      font-size: 11px;
+      color: #444;
+      min-width: 60px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn {
+      font-size: 12px;
+      padding: 5px 12px;
+      border: 1px solid #2a2a2e;
+      border-radius: 6px;
+      background: transparent;
+      color: #666;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .btn:hover:not(:disabled) { background: #1a1a1e; color: #ddd; border-color: #3a3a3e; }
+    .btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+    .btn-rent { border-color: #1a3a28; color: #4caf7d; }
+    .btn-rent:hover:not(:disabled) { background: #0f2a1a; border-color: #2a5a3a; color: #6dca97; }
+
+    .btn-pay { border-color: #3a2a00; color: #c9a84c; }
+    .btn-pay:hover:not(:disabled) { background: #2a1f00; border-color: #5a4000; color: #e0be6c; }
+
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal {
+      background: #111114;
+      border: 1px solid #2a2a2e;
+      border-radius: 12px;
+      padding: 1.75rem;
+      width: 340px;
+    }
+
+    .modal h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .modal-desc {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    .price-confirm {
+      background: #0f2a1a;
+      border: 1px solid #1a4a2e;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .price-confirm span { font-size: 13px; color: #4caf7d; }
+    .price-confirm strong { font-size: 20px; color: #6dca97; font-weight: 600; }
+
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .btn-primary {
+      background: #c9a84c;
+      color: #000;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-primary:hover { background: #e0be6c; }
+
+    .btn-cancel {
+      background: transparent;
+      color: #666;
+      border: 1px solid #2a2a2e;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-cancel:hover { color: #aaa; border-color: #3a3a3e; }
+
+    .error-msg { font-size: 12px; color: #e05555; min-height: 16px; margin-bottom: 8px; }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      color: #ddd;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+      white-space: nowrap;
+    }
+
+    .toast.show { opacity: 1; }
+    .loading { text-align: center; padding: 4rem; color: #444; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="logo-area">
+      <h1>The Mandalorian</h1>
+      <p>Sistema de alquiler de capítulos</p>
+    </div>
+    <div class="price-tag">Precio por capítulo: <span>$500</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat stat-disponible">
+      <div class="stat-label">Disponibles</div>
+      <div class="stat-value" id="count-disponible">—</div>
+    </div>
+    <div class="stat stat-reservado">
+      <div class="stat-label">Reservados</div>
+      <div class="stat-value" id="count-reservado">—</div>
+    </div>
+    <div class="stat stat-alquilado">
+      <div class="stat-label">Alquilados</div>
+      <div class="stat-value" id="count-alquilado">—</div>
+    </div>
+  </div>
+
+  <div id="content"><div class="loading">Cargando capítulos...</div></div>
+
+  <div id="modal-rent" class="modal-bg" style="display:none;">
+    <div class="modal">
+      <h2 id="modal-title">Alquilar capítulo</h2>
+      <p class="modal-desc">Se reservará por 4 minutos. Si no confirmás el pago, el capítulo vuelve a estar disponible automáticamente.</p>
+      <p class="error-msg" id="rent-error"></p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal('modal-rent')">Cancelar</button>
+        <button class="btn-primary" onclick="confirmRent()">Reservar ahora</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-confirm" class="modal-bg" style="display:none;">
+    <div class="modal">
+      <h2 id="modal-confirm-title">Confirmar pago</h2>
+      <p class="modal-desc">Al confirmar se registra el alquiler por 24 horas.</p>
+      <div class="price-confirm">
+        <span>Total a pagar</span>
+        <strong>$500</strong>
+      </div>
+      <p class="error-msg" id="confirm-error"></p>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal('modal-confirm')">Cancelar</button>
+        <button class="btn-primary" onclick="confirmPayment()">Pagar $500</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = 'http://localhost:3000';
+    const PRICE = 500;
+    let chapters = [];
+    let selectedId = null;
+
+    async function loadChapters() {
+      try {
+        const res = await fetch(`${API}/chapters`);
+        const data = await res.json();
+        chapters = [];
+        for (const season of Object.keys(data.seasons).sort()) {
+          data.seasons[season].forEach(ch => chapters.push({ ...ch, season: Number(season) }));
+        }
+        render();
+        updateStats();
+      } catch(e) {
+        document.getElementById('content').innerHTML = '<div class="loading">No se pudo conectar con la API. ¿Está corriendo en localhost:3000?</div>';
+      }
+    }
+
+    function updateStats() {
+      const counts = { disponible: 0, reservado: 0, alquilado: 0 };
+      chapters.forEach(ch => counts[ch.status]++);
+      document.getElementById('count-disponible').textContent = counts.disponible;
+      document.getElementById('count-reservado').textContent  = counts.reservado;
+      document.getElementById('count-alquilado').textContent  = counts.alquilado;
+    }
+
+    function render() {
+      const seasons = {};
+      chapters.forEach(ch => {
+        if (!seasons[ch.season]) seasons[ch.season] = [];
+        seasons[ch.season].push(ch);
+      });
+
+      let html = '';
+      for (const s of Object.keys(seasons).sort((a,b) => a-b)) {
+        const year = s == 1 ? '2019' : s == 2 ? '2020' : '2023';
+        html += `<div class="season-title">Temporada ${s} &middot; ${year}</div><div class="chapters">`;
+        for (const ch of seasons[s]) {
+          const canRent    = ch.status === 'disponible';
+          const canConfirm = ch.status === 'reservado';
+          let ttlText = '';
+          if (ch.status === 'reservado' && ch.ttl > 0) ttlText = `${ch.ttl}s`;
+          if (ch.status === 'alquilado' && ch.ttl > 0) {
+            const h = Math.floor(ch.ttl / 3600);
+            const m = Math.floor((ch.ttl % 3600) / 60);
+            ttlText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+          }
+          html += `
+            <div class="chapter-row">
+              <span class="chapter-num">${ch.number}</span>
+              <div class="chapter-info">
+                <div class="chapter-title">${ch.title}</div>
+                <div class="chapter-sub">${ch.titleEn}</div>
+              </div>
+              <span class="badge badge-${ch.status}">${ch.status}</span>
+              <span class="ttl">${ttlText}</span>
+              <button class="btn btn-rent" onclick="openRent('${ch.id}')" ${canRent ? '' : 'disabled'}>Alquilar</button>
+              <button class="btn btn-pay"  onclick="openConfirm('${ch.id}')" ${canConfirm ? '' : 'disabled'}>Pagar</button>
+            </div>`;
+        }
+        html += '</div>';
+      }
+      document.getElementById('content').innerHTML = html;
+    }
+
+    function openRent(id) {
+      selectedId = id;
+      const ch = chapters.find(c => c.id === id);
+      document.getElementById('modal-title').textContent = ch.title;
+      document.getElementById('rent-error').textContent = '';
+      document.getElementById('modal-rent').style.display = 'flex';
+    }
+
+    function openConfirm(id) {
+      selectedId = id;
+      const ch = chapters.find(c => c.id === id);
+      document.getElementById('modal-confirm-title').textContent = ch.title;
+      document.getElementById('confirm-error').textContent = '';
+      document.getElementById('modal-confirm').style.display = 'flex';
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    async function confirmRent() {
+      try {
+        const res = await fetch(`${API}/chapters/${selectedId}/rent`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) { document.getElementById('rent-error').textContent = data.error; return; }
+        closeModal('modal-rent');
+        showToast('Capítulo reservado — tenés 4 minutos para confirmar el pago.');
+        await loadChapters();
+      } catch(e) {
+        document.getElementById('rent-error').textContent = 'Error al conectar con la API.';
+      }
+    }
+
+    async function confirmPayment() {
+      try {
+        const res = await fetch(`${API}/chapters/${selectedId}/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price: PRICE })
+        });
+        const data = await res.json();
+        if (!res.ok) { document.getElementById('confirm-error').textContent = data.error; return; }
+        closeModal('modal-confirm');
+        showToast('Pago confirmado — disfrutá el capítulo por 24 hs.');
+        await loadChapters();
+      } catch(e) {
+        document.getElementById('confirm-error').textContent = 'Error al conectar con la API.';
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    loadChapters();
+    setInterval(loadChapters, 10000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "name": "mandalorian-rental-api",
+  "version": "1.0.0",
+  "description": "API de alquiler de capítulos de The Mandalorian con Redis",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "redis": "^4.6.10",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
