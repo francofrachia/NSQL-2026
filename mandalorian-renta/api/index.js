@@ -127,7 +127,7 @@ app.get("/chapters/:id", async (req, res) => {
 
 // ── POST /chapters/:id/rent ── Alquilar (reservar por 4 minutos) ─
 //
-// Lógica 100% Redis:
+// Lógica Redis:
 //   - SET reserved:{id} ... NX EX 240
 //   - NX = solo si no existe → garantiza 1 persona a la vez
 //   - EX 240 = expira en 4 minutos automáticamente
@@ -165,7 +165,7 @@ app.post("/chapters/:id/rent", async (req, res) => {
 
 // ── POST /chapters/:id/confirm ── Confirmar pago ─────────────────
 //
-// Lógica 100% Redis:
+// Lógica Redis:
 //   - Verifica que exista reserved:{id}
 //   - Elimina la reserva temporal
 //   - Crea rented:{id} con EX 86400 (24 horas)
