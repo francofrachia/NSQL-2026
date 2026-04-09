@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Mandalorian — Alquiler</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
@@ -67,11 +72,30 @@
       padding: 10px 14px;
     }
 
-    .stat-label { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-    .stat-value { font-size: 22px; font-weight: 600; }
-    .stat-disponible .stat-value { color: #4caf7d; }
-    .stat-reservado  .stat-value { color: #c9a84c; }
-    .stat-alquilado  .stat-value { color: #e05555; }
+    .stat-label {
+      font-size: 11px;
+      color: #444;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .stat-disponible .stat-value {
+      color: #4caf7d;
+    }
+
+    .stat-reservado .stat-value {
+      color: #c9a84c;
+    }
+
+    .stat-alquilado .stat-value {
+      color: #e05555;
+    }
 
     .season-title {
       font-size: 11px;
@@ -82,7 +106,11 @@
       margin: 1.75rem 0 0.6rem;
     }
 
-    .chapters { display: flex; flex-direction: column; gap: 4px; }
+    .chapters {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
     .chapter-row {
       display: flex;
@@ -95,7 +123,9 @@
       transition: border-color 0.15s;
     }
 
-    .chapter-row:hover { border-color: #2e2e34; }
+    .chapter-row:hover {
+      border-color: #2e2e34;
+    }
 
     .chapter-num {
       font-size: 12px;
@@ -104,7 +134,10 @@
       font-weight: 500;
     }
 
-    .chapter-info { flex: 1; min-width: 0; }
+    .chapter-info {
+      flex: 1;
+      min-width: 0;
+    }
 
     .chapter-title {
       font-size: 14px;
@@ -126,9 +159,23 @@
       white-space: nowrap;
     }
 
-    .badge-disponible { background: #0f2a1a; color: #4caf7d; border: 1px solid #1a4a2e; }
-    .badge-reservado  { background: #2a1f00; color: #c9a84c; border: 1px solid #4a3800; }
-    .badge-alquilado  { background: #2a0f0f; color: #e05555; border: 1px solid #4a1a1a; }
+    .badge-disponible {
+      background: #0f2a1a;
+      color: #4caf7d;
+      border: 1px solid #1a4a2e;
+    }
+
+    .badge-reservado {
+      background: #2a1f00;
+      color: #c9a84c;
+      border: 1px solid #4a3800;
+    }
+
+    .badge-alquilado {
+      background: #2a0f0f;
+      color: #e05555;
+      border: 1px solid #4a1a1a;
+    }
 
     .ttl {
       font-size: 11px;
@@ -150,19 +197,43 @@
       transition: all 0.15s;
     }
 
-    .btn:hover:not(:disabled) { background: #1a1a1e; color: #ddd; border-color: #3a3a3e; }
-    .btn:disabled { opacity: 0.2; cursor: not-allowed; }
+    .btn:hover:not(:disabled) {
+      background: #1a1a1e;
+      color: #ddd;
+      border-color: #3a3a3e;
+    }
 
-    .btn-rent { border-color: #1a3a28; color: #4caf7d; }
-    .btn-rent:hover:not(:disabled) { background: #0f2a1a; border-color: #2a5a3a; color: #6dca97; }
+    .btn:disabled {
+      opacity: 0.2;
+      cursor: not-allowed;
+    }
 
-    .btn-pay { border-color: #3a2a00; color: #c9a84c; }
-    .btn-pay:hover:not(:disabled) { background: #2a1f00; border-color: #5a4000; color: #e0be6c; }
+    .btn-rent {
+      border-color: #1a3a28;
+      color: #4caf7d;
+    }
+
+    .btn-rent:hover:not(:disabled) {
+      background: #0f2a1a;
+      border-color: #2a5a3a;
+      color: #6dca97;
+    }
+
+    .btn-pay {
+      border-color: #3a2a00;
+      color: #c9a84c;
+    }
+
+    .btn-pay:hover:not(:disabled) {
+      background: #2a1f00;
+      border-color: #5a4000;
+      color: #e0be6c;
+    }
 
     .modal-bg {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0, 0, 0, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -202,10 +273,22 @@
       justify-content: space-between;
     }
 
-    .price-confirm span { font-size: 13px; color: #4caf7d; }
-    .price-confirm strong { font-size: 20px; color: #6dca97; font-weight: 600; }
+    .price-confirm span {
+      font-size: 13px;
+      color: #4caf7d;
+    }
 
-    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .price-confirm strong {
+      font-size: 20px;
+      color: #6dca97;
+      font-weight: 600;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
 
     .btn-primary {
       background: #c9a84c;
@@ -219,7 +302,9 @@
       transition: background 0.15s;
     }
 
-    .btn-primary:hover { background: #e0be6c; }
+    .btn-primary:hover {
+      background: #e0be6c;
+    }
 
     .btn-cancel {
       background: transparent;
@@ -232,9 +317,17 @@
       transition: all 0.15s;
     }
 
-    .btn-cancel:hover { color: #aaa; border-color: #3a3a3e; }
+    .btn-cancel:hover {
+      color: #aaa;
+      border-color: #3a3a3e;
+    }
 
-    .error-msg { font-size: 12px; color: #e05555; min-height: 16px; margin-bottom: 8px; }
+    .error-msg {
+      font-size: 12px;
+      color: #e05555;
+      min-height: 16px;
+      margin-bottom: 8px;
+    }
 
     .toast {
       position: fixed;
@@ -254,10 +347,19 @@
       white-space: nowrap;
     }
 
-    .toast.show { opacity: 1; }
-    .loading { text-align: center; padding: 4rem; color: #444; font-size: 14px; }
+    .toast.show {
+      opacity: 1;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 4rem;
+      color: #444;
+      font-size: 14px;
+    }
   </style>
 </head>
+
 <body>
 
   <div class="page-header">
@@ -283,12 +385,15 @@
     </div>
   </div>
 
-  <div id="content"><div class="loading">Cargando capítulos...</div></div>
+  <div id="content">
+    <div class="loading">Cargando capítulos...</div>
+  </div>
 
   <div id="modal-rent" class="modal-bg" style="display:none;">
     <div class="modal">
       <h2 id="modal-title">Alquilar capítulo</h2>
-      <p class="modal-desc">Se reservará por 4 minutos. Si no confirmás el pago, el capítulo vuelve a estar disponible automáticamente.</p>
+      <p class="modal-desc">Se reservará por 4 minutos. Si no confirmás el pago, el capítulo vuelve a estar disponible
+        automáticamente.</p>
       <p class="error-msg" id="rent-error"></p>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeModal('modal-rent')">Cancelar</button>
@@ -331,7 +436,7 @@
         }
         render();
         updateStats();
-      } catch(e) {
+      } catch (e) {
         document.getElementById('content').innerHTML = '<div class="loading">No se pudo conectar con la API. ¿Está corriendo en localhost:3000?</div>';
       }
     }
@@ -340,8 +445,8 @@
       const counts = { disponible: 0, reservado: 0, alquilado: 0 };
       chapters.forEach(ch => counts[ch.status]++);
       document.getElementById('count-disponible').textContent = counts.disponible;
-      document.getElementById('count-reservado').textContent  = counts.reservado;
-      document.getElementById('count-alquilado').textContent  = counts.alquilado;
+      document.getElementById('count-reservado').textContent = counts.reservado;
+      document.getElementById('count-alquilado').textContent = counts.alquilado;
     }
 
     function render() {
@@ -352,11 +457,11 @@
       });
 
       let html = '';
-      for (const s of Object.keys(seasons).sort((a,b) => a-b)) {
+      for (const s of Object.keys(seasons).sort((a, b) => a - b)) {
         const year = s == 1 ? '2019' : s == 2 ? '2020' : '2023';
         html += `<div class="season-title">Temporada ${s} &middot; ${year}</div><div class="chapters">`;
         for (const ch of seasons[s]) {
-          const canRent    = ch.status === 'disponible';
+          const canRent = ch.status === 'disponible';
           const canConfirm = ch.status === 'reservado';
           let ttlText = '';
           if (ch.status === 'reservado' && ch.ttl > 0) ttlText = `${ch.ttl}s`;
@@ -399,6 +504,7 @@
       document.getElementById('modal-confirm').style.display = 'flex';
     }
 
+
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     async function confirmRent() {
@@ -409,7 +515,7 @@
         closeModal('modal-rent');
         showToast('Capítulo reservado — tenés 4 minutos para confirmar el pago.');
         await loadChapters();
-      } catch(e) {
+      } catch (e) {
         document.getElementById('rent-error').textContent = 'Error al conectar con la API.';
       }
     }
@@ -426,7 +532,7 @@
         closeModal('modal-confirm');
         showToast('Pago confirmado — disfrutá el capítulo por 24 hs.');
         await loadChapters();
-      } catch(e) {
+      } catch (e) {
         document.getElementById('confirm-error').textContent = 'Error al conectar con la API.';
       }
     }
@@ -442,4 +548,5 @@
     setInterval(loadChapters, 10000);
   </script>
 </body>
+
 </html>
