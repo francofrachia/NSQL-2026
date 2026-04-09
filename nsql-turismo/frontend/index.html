@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Turismo CDU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f5;
+            color: #111;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .card h2 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        select,
+        input {
+            padding: 7px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        select {
+            background: #fff;
+        }
+
+        button {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #111;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #111;
+            border: 1px solid #ccc;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f0f0;
+        }
+
+        .result-list {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .result-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .result-dist {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
+        .msg {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .msg.error {
+            color: #c00;
+        }
+
+        .msg.success {
+            color: #2e7d32;
+        }
+
+        .distance-box {
+            margin-top: 1rem;
+            padding: 12px 16px;
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1b5e20;
+        }
+
+        label {
+            font-size: 12px;
+            color: #888;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .section {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Turismo Concepción del Uruguay</h1>
+    <p class="subtitle">Encontrá puntos de interés cerca tuyo</p>
+
+    <!-- Agregar lugar -->
+    <div class="card">
+        <h2>Agregar lugar</h2>
+        <div class="form-row">
+            <div class="section">
+                <label>Grupo</label>
+                <select id="add-group">
+                    <option value="cervecerias">Cervecerías</option>
+                    <option value="universidades">Universidades</option>
+                    <option value="farmacias">Farmacias</option>
+                    <option value="emergencias">Emergencias</option>
+                    <option value="supermercados">Supermercados</option>
+                </select>
+            </div>
+            <div class="section">
+                <label>Nombre</label>
+                <input type="text" id="add-name" placeholder="Ej: Drakkar" />
+            </div>
+            <div class="section">
+                <label>Latitud</label>
+                <input type="number" id="add-lat" placeholder="-32.48" step="any" />
+            </div>
+            <div class="section">
+                <label>Longitud</label>
+                <input type="number" id="add-lng" placeholder="-58.23" step="any" />
+            </div>
+            <div class="section" style="display:flex;align-items:flex-end;">
+                <button onclick="addPlace()">Agregar</button>
+            </div>
+        </div>
+        <p class="msg" id="add-msg"></p>
+    </div>
+
+    <!-- Buscar cercanos -->
+    <div class="card">
+        <h2>Lugares cercanos (radio 5km)</h2>
+        <div class="form-row">
+            <div class="section">
+                <label>Grupo</label>
+                <select id="nearby-group">
+                    <option value="cervecerias">Cervecerías</option>
+                    <option value="universidades">Universidades</option>
+                    <option value="farmacias">Farmacias</option>
+                    <option value="emergencias">Emergencias</option>
+                    <option value="supermercados">Supermercados</option>
+                </select>
+            </div>
+            <div class="section" style="display:flex;align-items:flex-end;">
+                <button class="btn-secondary" onclick="useMyLocation()">Usar mi ubicación</button>
+            </div>
+            <div class="section" style="display:flex;align-items:flex-end;">
+                <button onclick="searchNearby()">Buscar</button>
+            </div>
+        </div>
+        <p class="msg" id="nearby-msg"></p>
+        <div class="result-list" id="nearby-results"></div>
+    </div>
+
+    <!-- Distancia -->
+    <div class="card">
+        <h2>Distancia a un lugar</h2>
+        <div class="form-row">
+            <div class="section">
+                <label>Grupo</label>
+                <select id="dist-group">
+                    <option value="cervecerias">Cervecerías</option>
+                    <option value="universidades">Universidades</option>
+                    <option value="farmacias">Farmacias</option>
+                    <option value="emergencias">Emergencias</option>
+                    <option value="supermercados">Supermercados</option>
+                </select>
+            </div>
+            <div class="section">
+                <label>Nombre del lugar</label>
+                <input type="text" id="dist-place" placeholder="Ej: Drakkar" />
+            </div>
+            <div class="section" style="display:flex;align-items:flex-end;">
+                <button onclick="getDistance()">Calcular</button>
+            </div>
+        </div>
+        <p class="msg" id="dist-msg"></p>
+        <div id="dist-result"></div>
+    </div>
+
+    <script>
+
+        const API = 'http://127.0.0.1:3000';
+        let userLat = null;
+        let userLng = null;
+
+        function useMyLocation() {
+            if (!navigator.geolocation) {
+                document.getElementById('nearby-msg').textContent = 'Tu navegador no soporta geolocalización.';
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    userLat = pos.coords.latitude;
+                    userLng = pos.coords.longitude;
+                    document.getElementById('nearby-msg').textContent = `Ubicación detectada: ${userLat.toFixed(4)}, ${userLng.toFixed(4)}`;
+                    document.getElementById('nearby-msg').className = 'msg success';
+                },
+                () => {
+                    // Si falla la geolocalización usamos CDU como fallback
+                    userLat = -32.4816;
+                    userLng = -58.2333;
+                    document.getElementById('nearby-msg').textContent = 'No se pudo detectar ubicación. Usando centro de CDU.';
+                    document.getElementById('nearby-msg').className = 'msg';
+                }
+            );
+        }
+
+        async function addPlace() {
+            const group = document.getElementById('add-group').value;
+            const name = document.getElementById('add-name').value.trim();
+            const lat = document.getElementById('add-lat').value;
+            const lng = document.getElementById('add-lng').value;
+            const msg = document.getElementById('add-msg');
+
+            if (!name || !lat || !lng) { msg.textContent = 'Completá todos los campos.'; msg.className = 'msg error'; return; }
+
+            try {
+                const res = await fetch(`${API}/places/${group}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, latitude: lat, longitude: lng })
+                });
+                const data = await res.json();
+                msg.textContent = res.ok ? data.message : data.error;
+                msg.className = res.ok ? 'msg success' : 'msg error';
+            } catch (e) {
+                msg.textContent = 'Error al conectar con la API.';
+                msg.className = 'msg error';
+            }
+        }
+
+        async function searchNearby() {
+            const group = document.getElementById('nearby-group').value;
+            const msg = document.getElementById('nearby-msg');
+            const list = document.getElementById('nearby-results');
+
+            if (!userLat || !userLng) {
+                msg.textContent = 'Primero usá "Usar mi ubicación".';
+                msg.className = 'msg error';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API}/places/${group}/nearby?lat=${userLat}&lng=${userLng}`);
+                const data = await res.json();
+
+                if (!data.nearby || data.nearby.length === 0) {
+                    list.innerHTML = '';
+                    msg.textContent = 'No hay lugares en ese grupo dentro de 5km.';
+                    msg.className = 'msg';
+                    return;
+                }
+
+                msg.textContent = `${data.nearby.length} lugar(es) encontrado(s)`;
+                msg.className = 'msg success';
+
+                list.innerHTML = data.nearby.map(function (p) {
+                    return '<div class="result-item"><div><div class="result-name">' + p.member + '</div><div class="result-dist">' + parseFloat(p.distance).toFixed(2) + ' km</div></div><span class="badge">' + group + '</span></div>';
+                }).join('');
+            } catch (e) {
+                msg.textContent = 'Error al conectar con la API.';
+                msg.className = 'msg error';
+            }
+        }
+
+        async function getDistance() {
+            const group = document.getElementById('dist-group').value;
+            const place = document.getElementById('dist-place').value.trim();
+            const msg = document.getElementById('dist-msg');
+            const box = document.getElementById('dist-result');
+
+            if (!place) { msg.textContent = 'Ingresá el nombre del lugar.'; msg.className = 'msg error'; return; }
+            if (!userLat || !userLng) { msg.textContent = 'Primero usá "Usar mi ubicación" en la sección anterior.'; msg.className = 'msg error'; return; }
+
+            try {
+                const res = await fetch(`${API}/places/${group}/distance?lat=${userLat}&lng=${userLng}&place=${encodeURIComponent(place)}`);
+                const data = await res.json();
+
+                if (!res.ok) { msg.textContent = data.error; msg.className = 'msg error'; box.innerHTML = ''; return; }
+
+                msg.textContent = '';
+                box.innerHTML = `
+          <div class="distance-box">
+            <strong>${data.place}</strong> está a <strong>${data.distanceKm} km</strong> (${data.distanceM} metros) de tu ubicación.
+          </div>
+        `;
+            } catch (e) {
+                msg.textContent = 'Error al conectar con la API.';
+                msg.className = 'msg error';
+            }
+        }
+    </script>
+</body>
+
+</html>
