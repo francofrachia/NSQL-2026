@@ -1,0 +1,67 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo-airports
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - airport_net
+
+  redis-geo:
+    image: redis:7-alpine
+    container_name: redis-geo
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    networks:
+      - airport_net
+
+  redis-pop:
+    image: redis:7-alpine
+    container_name: redis-pop
+    restart: unless-stopped
+    ports:
+      - "6381:6379"
+    networks:
+      - airport_net
+
+  backend:
+    build: ./backend
+    container_name: airport-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/airport_db
+      - REDIS_GEO_HOST=redis-geo
+      - REDIS_GEO_PORT=6379
+      - REDIS_POP_HOST=redis-pop
+      - REDIS_POP_PORT=6379
+      - PORT=3000
+    depends_on:
+      - mongo
+      - redis-geo
+      - redis-pop
+    networks:
+      - airport_net
+
+  frontend:
+    build: ./frontend
+    container_name: airport-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - airport_net
+
+volumes:
+  mongo_data:
+
+networks:
+  airport_net:
+    driver: bridge

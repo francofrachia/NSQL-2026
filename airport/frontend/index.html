@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AirportMap – Visualizador de Aeropuertos</title>
+    <meta name="description" content="Mapa interactivo de aeropuertos mundiales con búsqueda geoespacial y ranking de popularidad." />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+
+    <!-- ── HEADER ────────────────────────────────────────────── -->
+    <header id="header">
+      <div class="header-brand">
+        <span class="header-icon">✈</span>
+        <h1>AirportMap</h1>
+      </div>
+      <div class="header-stats">
+        <span id="stat-total">Cargando...</span>
+      </div>
+    </header>
+
+    <!-- ── LAYOUT ────────────────────────────────────────────── -->
+    <div id="layout">
+
+      <!-- SIDEBAR -->
+      <aside id="sidebar">
+
+        <!-- ① BUSCAR POR TEXTO -->
+        <section class="panel">
+          <h2 class="panel-title"><span class="panel-icon">🔍</span> Buscar</h2>
+          <div class="input-row">
+            <input id="input-search" type="text"
+              placeholder="Nombre, ciudad o código IATA..."
+              autocomplete="off"
+              onkeydown="if(event.key==='Enter') searchAirports()" />
+          </div>
+          <button id="btn-search" class="btn btn-primary" onclick="searchAirports()">
+            <span class="btn-text">Buscar</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+          <!-- Resultados inline -->
+          <div id="search-results" class="result-box hidden"></div>
+        </section>
+
+        <!-- ② AEROPUERTOS CERCANOS -->
+        <section class="panel">
+          <h2 class="panel-title"><span class="panel-icon">📍</span> Aeropuertos Cercanos</h2>
+          <div class="field-group">
+            <label>Latitud</label>
+            <input id="input-lat" type="number" step="any" placeholder="-31.79" />
+          </div>
+          <div class="field-group">
+            <label>Longitud</label>
+            <input id="input-lng" type="number" step="any" placeholder="-60.48" />
+          </div>
+          <div class="field-group">
+            <label>Radio (km)</label>
+            <input id="input-radius" type="number" value="500" min="1" max="20000" />
+          </div>
+          <div class="location-buttons">
+            <button id="btn-pick-map" class="btn btn-secondary" onclick="toggleMapPicker()">
+              🗺 Clic en mapa
+            </button>
+            <button class="btn btn-secondary" onclick="useMyLocation()">
+              📡 GPS
+            </button>
+          </div>
+          <div id="map-picker-hint" class="pick-hint hidden">
+            👆 Hacé clic en cualquier punto del mapa para seleccionar las coordenadas
+          </div>
+          <button id="btn-nearby" class="btn btn-primary" onclick="searchNearby()">
+            <span class="btn-text">Buscar cercanos</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+          <!-- Resultados inline -->
+          <div id="nearby-results" class="result-box hidden"></div>
+        </section>
+
+        <!-- ③ MÁS VISITADOS -->
+        <section class="panel">
+          <h2 class="panel-title"><span class="panel-icon">🏆</span> Más Visitados</h2>
+          <button class="btn btn-accent" onclick="loadPopular()">
+            Actualizar ranking
+          </button>
+          <div id="popular-list">
+            <p class="hint">Hacé clic en un aeropuerto del mapa para sumar visitas.</p>
+          </div>
+        </section>
+
+        <!-- ④ AGREGAR AEROPUERTO -->
+        <section class="panel">
+          <h2 class="panel-title"><span class="panel-icon">➕</span> Nuevo Aeropuerto</h2>
+          <div class="field-group">
+            <label>Nombre *</label>
+            <input id="new-name" type="text" placeholder="Aeropuerto Internacional..." />
+          </div>
+          <div class="field-group">
+            <label>Ciudad</label>
+            <input id="new-city" type="text" placeholder="Paraná, Argentina" />
+          </div>
+          <div class="form-row">
+            <div class="field-group">
+              <label>Código IATA</label>
+              <input id="new-iata" type="text" placeholder="PRA" maxlength="4" style="text-transform:uppercase" />
+            </div>
+            <div class="field-group">
+              <label>Código ICAO</label>
+              <input id="new-icao" type="text" placeholder="SAAP" maxlength="4" style="text-transform:uppercase" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field-group">
+              <label>Latitud *</label>
+              <input id="new-lat" type="number" step="any" placeholder="-31.79" />
+            </div>
+            <div class="field-group">
+              <label>Longitud *</label>
+              <input id="new-lng" type="number" step="any" placeholder="-60.48" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field-group">
+              <label>Altitud (ft)</label>
+              <input id="new-alt" type="number" placeholder="0" />
+            </div>
+            <div class="field-group">
+              <label>Zona horaria</label>
+              <input id="new-tz" type="text" placeholder="America/Argentina/Buenos_Aires" />
+            </div>
+          </div>
+          <button id="btn-add" class="btn btn-primary" onclick="addAirport()">
+            <span class="btn-text">✚ Crear aeropuerto</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+          <div id="add-result" class="result-box hidden"></div>
+        </section>
+
+      </aside>
+
+      <!-- MAPA -->
+      <main id="map-container">
+        <div id="map"></div>
+        <div id="loader">
+          <div class="loader-spinner"></div>
+          <p>Cargando aeropuertos...</p>
+        </div>
+      </main>
+    </div>
+
+    <!-- MODAL de detalle -->
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+      <div class="modal" id="modal" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- App JS -->
+    <script src="app.js"></script>
+  </body>
+</html>
