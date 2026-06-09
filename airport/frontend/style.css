@@ -204,6 +204,15 @@ input::placeholder { color: var(--text-muted); }
 #map.picker-mode { cursor: crosshair !important; }
 #map.picker-mode .leaflet-container { cursor: crosshair !important; }
 
+/* Divider entre geocoding y coordenadas manuales */
+.coords-divider {
+  text-align: center;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  position: relative;
+  padding: 2px 0;
+}
+
 /* Form row (2 columns) */
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 

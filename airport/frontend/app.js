@@ -3,10 +3,9 @@
    ═══════════════════════════════════════════════════════════════ */
 
 // ── Config ──────────────────────────────────────────────────────
-const isLocal =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1";
-const API_BASE = isLocal ? "http://localhost:3000" : "/api";
+// Siempre usar el proxy de Nginx (/api) para evitar problemas de CORS.
+// El nginx.conf redirige /api/ → http://backend:3000/
+const API_BASE = "/api";
 
 // ── Estado global ────────────────────────────────────────────────
 let map;
@@ -243,9 +242,49 @@ function renderSearchResults(airports, box) {
 // AEROPUERTOS CERCANOS
 // ════════════════════════════════════════════════════════════════
 
+// Geocodificación por nombre de ciudad (Nominatim / OpenStreetMap) — sin GPS
+async function geocodeCity() {
+  const query = document.getElementById("input-city-geo").value.trim();
+  const btn   = document.getElementById("btn-geocode");
+  if (!query) return;
+
+  const origText = btn.textContent;
+  btn.textContent = "⏳";
+  btn.disabled = true;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=0`;
+    const res  = await fetch(url, { headers: { "Accept-Language": "es" } });
+    const data = await res.json();
+
+    if (!data.length) {
+      showGpsToast("⚠ Ciudad no encontrada. Probá con otro nombre.");
+      return;
+    }
+
+    const { lat, lon, display_name } = data[0];
+    document.getElementById("input-lat").value = parseFloat(lat).toFixed(6);
+    document.getElementById("input-lng").value = parseFloat(lon).toFixed(6);
+
+    const label = display_name.split(",").slice(0, 2).join(",");
+    showGpsToast(`📍 ${label}`);
+
+    // Centrar mapa en la ciudad
+    map.setView([parseFloat(lat), parseFloat(lon)], 9, { animate: true });
+
+  } catch (err) {
+    showGpsToast("⚠ Error al buscar la ciudad. Verificá tu conexión.");
+    console.error("geocodeCity error:", err);
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
+}
+
 async function searchNearby() {
-  const lat = parseFloat(document.getElementById("input-lat").value);
-  const lng = parseFloat(document.getElementById("input-lng").value);
+  // Reemplazar coma por punto (sistemas en español usan coma decimal)
+  const lat = parseFloat(document.getElementById("input-lat").value.replace(",", "."));
+  const lng = parseFloat(document.getElementById("input-lng").value.replace(",", "."));
   const radius = parseFloat(document.getElementById("input-radius").value) || 500;
   const box = document.getElementById("nearby-results");
   const btn = document.getElementById("btn-nearby");
@@ -312,23 +351,107 @@ function renderNearbyResults(items, box) {
 
 function useMyLocation() {
   if (!navigator.geolocation) {
-    alert("Tu navegador no soporta geolocalización.");
+    showGpsError("Tu navegador no soporta geolocalización.");
     return;
   }
+
+  // Mostrar mensaje de carga
+  const btn = document.querySelector(".btn-secondary[onclick='useMyLocation()']");
+  if (btn) { btn.textContent = "⏳ Detectando..."; btn.disabled = true; }
+
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      document.getElementById("input-lat").value = pos.coords.latitude.toFixed(6);
-      document.getElementById("input-lng").value = pos.coords.longitude.toFixed(6);
+      if (btn) { btn.textContent = "📡 GPS"; btn.disabled = false; }
+
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = pos.coords.accuracy; // metros
+
+      // Argentina está en el hemisferio SUR (lat negativa) y al OESTE (lng negativa)
+      // Si la lat es positiva, probablemente el GPS usó IP y está equivocado
+      const pareceArgentina = lat < 0 && lng < -25 && lng > -85;
+
+      if (!pareceArgentina) {
+        // Mostrar advertencia con opción de usar de todas formas o cancelar
+        showGpsWarning(lat, lng, acc);
+      } else {
+        applyGpsCoords(lat, lng);
+        showGpsToast(`📍 Ubicación detectada (precisión: ~${Math.round(acc)} m)`);
+      }
     },
-    () => {
-      alert(
-        "No se pudo obtener tu ubicación.\n\n" +
-        "En escritorios sin GPS, el navegador estima la posición por IP y puede ser impreciso.\n" +
-        "Usá el botón 'Clic en mapa' para seleccionar tu ubicación manualmente."
+    (err) => {
+      if (btn) { btn.textContent = "📡 GPS"; btn.disabled = false; }
+      showGpsError(
+        "No se pudo obtener tu ubicación por GPS.\n" +
+        "Usá '🗺 Clic en mapa' para seleccionar tu posición manualmente."
       );
-    }
+    },
+    { timeout: 8000, enableHighAccuracy: false }
   );
 }
+
+function applyGpsCoords(lat, lng) {
+  document.getElementById("input-lat").value = lat.toFixed(6);
+  document.getElementById("input-lng").value = lng.toFixed(6);
+}
+
+function showGpsWarning(lat, lng, acc) {
+  // Crear modal de advertencia
+  const existing = document.getElementById("gps-warning-modal");
+  if (existing) existing.remove();
+
+  const div = document.createElement("div");
+  div.id = "gps-warning-modal";
+  div.style.cssText = `
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:#1a2235; border:1px solid #f59e0b; border-radius:12px;
+    padding:20px 24px; z-index:9999; max-width:340px; width:90%;
+    box-shadow:0 8px 40px rgba(0,0,0,0.7); font-family:Inter,sans-serif;
+  `;
+  div.innerHTML = `
+    <div style="font-size:0.7rem;color:#f59e0b;font-weight:700;letter-spacing:1px;margin-bottom:8px">⚠ UBICACIÓN IMPRECISA</div>
+    <div style="font-size:0.88rem;color:#f1f5f9;margin-bottom:6px;line-height:1.5">
+      El GPS detectó coordenadas que <strong>no parecen estar en Argentina</strong>.<br>
+      Esto ocurre cuando el navegador usa tu IP en lugar del GPS real.
+    </div>
+    <div style="background:#0d1525;border-radius:8px;padding:8px 12px;margin:10px 0;font-size:0.8rem;color:#94a3b8">
+      Detectado: <strong style="color:#f1f5f9">${lat.toFixed(4)}, ${lng.toFixed(4)}</strong>
+      ${acc ? `<span style="color:#475569"> (~${Math.round(acc)} m)</span>` : ""}
+    </div>
+    <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:14px">
+      💡 <strong>Recomendación:</strong> Cerrá este mensaje y usá el botón <strong>"🗺 Clic en mapa"</strong> para seleccionar tu ubicación real en Entre Ríos.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="document.getElementById('gps-warning-modal').remove()"
+        style="flex:1;padding:8px;background:#1e2a40;border:1px solid #334155;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:0.78rem">
+        Cancelar
+      </button>
+      <button onclick="applyGpsCoords(${lat},${lng}); document.getElementById('gps-warning-modal').remove();"
+        style="flex:1;padding:8px;background:#dc2626;border:none;border-radius:8px;color:white;cursor:pointer;font-size:0.78rem;font-weight:600">
+        Usar igual
+      </button>
+    </div>
+  `;
+  document.body.appendChild(div);
+}
+
+function showGpsToast(msg) {
+  const t = document.createElement("div");
+  t.style.cssText = `
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#10b981; color:white; padding:8px 18px; border-radius:100px;
+    font-size:0.8rem; font-family:Inter,sans-serif; z-index:9999;
+    box-shadow:0 4px 16px rgba(0,0,0,0.4); white-space:nowrap;
+  `;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+function showGpsError(msg) {
+  showGpsToast("⚠ " + msg.split("\n")[0]);
+}
+
 
 // ── Map Picker (clic en mapa para setear coordenadas) ───────────────────────
 let pickerActive = false;
@@ -411,24 +534,30 @@ async function addAirport() {
   const btn     = document.getElementById("btn-add");
   const box     = document.getElementById("add-result");
   const nameVal = document.getElementById("new-name").value.trim();
-  const latVal  = parseFloat(document.getElementById("new-lat").value);
-  const lngVal  = parseFloat(document.getElementById("new-lng").value);
+  // Reemplazar coma por punto (sistemas en español usan coma decimal)
+  const latRaw  = document.getElementById("new-lat").value.replace(",", ".");
+  const lngRaw  = document.getElementById("new-lng").value.replace(",", ".");
+  const latVal  = parseFloat(latRaw);
+  const lngVal  = parseFloat(lngRaw);
 
-  if (!nameVal || isNaN(latVal) || isNaN(lngVal)) {
-    box.classList.remove("hidden");
-    box.innerHTML = `<div class="result-empty">⚠ Nombre, Latitud y Longitud son obligatorios.</div>`;
+  console.log("[addAirport]", { nameVal, latVal, lngVal });
+
+  box.classList.remove("hidden");
+  if (!nameVal) {
+    box.innerHTML = `<div class="result-empty">⚠ El nombre es obligatorio.</div>`;
     return;
   }
+  if (isNaN(latVal) || isNaN(lngVal)) {
+    box.innerHTML = `<div class="result-empty">⚠ Latitud y Longitud inválidas. Usá punto como separador decimal (ej: -31.79)</div>`;
+    return;
+  }
+  box.classList.add("hidden");
 
   const payload = {
-    name:      nameVal,
-    city:      document.getElementById("new-city").value.trim(),
-    iata_code: document.getElementById("new-iata").value.trim().toUpperCase() || null,
-    icao:      document.getElementById("new-icao").value.trim().toUpperCase() || null,
-    lat:       latVal,
-    lng:       lngVal,
-    alt:       parseInt(document.getElementById("new-alt").value) || 0,
-    tz:        document.getElementById("new-tz").value.trim(),
+    name: nameVal,
+    city: document.getElementById("new-city").value.trim(),
+    lat:  latVal,
+    lng:  lngVal,
   };
 
   setLoading(btn, true);
@@ -444,7 +573,7 @@ async function addAirport() {
 
     // Éxito: agregar marker al mapa y limpiar formulario
     addMarker(data.airport);
-    ["new-name","new-city","new-iata","new-icao","new-lat","new-lng","new-alt","new-tz"]
+    ["new-name","new-city","new-lat","new-lng"]
       .forEach(id => { document.getElementById(id).value = ""; });
 
     box.classList.remove("hidden");

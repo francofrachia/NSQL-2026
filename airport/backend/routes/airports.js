@@ -158,14 +158,26 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "name, lat y lng son requeridos" });
     }
 
-    const airport = new Airport({ name, city, iata_code, icao, lat, lng, alt, tz });
+    // Si no se provee IATA ni ICAO, generar un código interno automático
+    const autoCode = (!iata_code && !icao)
+      ? "USR" + Math.random().toString(36).substring(2, 6).toUpperCase()
+      : null;
+
+    const airport = new Airport({
+      name,
+      city,
+      iata_code: iata_code || autoCode,
+      icao: icao || null,
+      lat,
+      lng,
+      alt,
+      tz,
+    });
     await airport.save();
 
-    // Agregar a Redis GEO
-    const code = iata_code || icao;
-    if (code) {
-      await geo.geoadd("airports-geo", lng, lat, code);
-    }
+    // Agregar a Redis GEO usando el código disponible
+    const geoCode = iata_code || icao || autoCode;
+    await geo.geoadd("airports-geo", lng, lat, geoCode);
 
     res.status(201).json({ message: "Aeropuerto creado", airport });
   } catch (err) {
@@ -176,6 +188,7 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ─── GET /airports/:iata ─────────────────────────────────────────────────────
 router.get("/:iata", async (req, res) => {

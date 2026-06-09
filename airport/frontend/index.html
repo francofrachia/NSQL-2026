@@ -55,13 +55,28 @@
         <!-- ② AEROPUERTOS CERCANOS -->
         <section class="panel">
           <h2 class="panel-title"><span class="panel-icon">📍</span> Aeropuertos Cercanos</h2>
+
+          <!-- Geocoding por ciudad -->
+          <div class="field-group">
+            <label>Buscar mi ciudad</label>
+            <div class="input-row">
+              <input id="input-city-geo" type="text"
+                placeholder="Concepción del Uruguay..."
+                autocomplete="off"
+                onkeydown="if(event.key==='Enter') geocodeCity()" />
+              <button id="btn-geocode" class="btn btn-secondary" style="width:auto;padding:8px 12px;flex-shrink:0" onclick="geocodeCity()" title="Buscar">🔍</button>
+            </div>
+          </div>
+
+          <div class="coords-divider">─ o ingresá coordenadas ─</div>
+
           <div class="field-group">
             <label>Latitud</label>
-            <input id="input-lat" type="number" step="any" placeholder="-31.79" />
+            <input id="input-lat" type="number" step="any" placeholder="-32.48" />
           </div>
           <div class="field-group">
             <label>Longitud</label>
-            <input id="input-lng" type="number" step="any" placeholder="-60.48" />
+            <input id="input-lng" type="number" step="any" placeholder="-58.23" />
           </div>
           <div class="field-group">
             <label>Radio (km)</label>
@@ -86,6 +101,7 @@
           <div id="nearby-results" class="result-box hidden"></div>
         </section>
 
+
         <!-- ③ MÁS VISITADOS -->
         <section class="panel">
           <h2 class="panel-title"><span class="panel-icon">🏆</span> Más Visitados</h2>
@@ -108,36 +124,18 @@
             <label>Ciudad</label>
             <input id="new-city" type="text" placeholder="Paraná, Argentina" />
           </div>
-          <div class="form-row">
-            <div class="field-group">
-              <label>Código IATA</label>
-              <input id="new-iata" type="text" placeholder="PRA" maxlength="4" style="text-transform:uppercase" />
-            </div>
-            <div class="field-group">
-              <label>Código ICAO</label>
-              <input id="new-icao" type="text" placeholder="SAAP" maxlength="4" style="text-transform:uppercase" />
-            </div>
-          </div>
+
           <div class="form-row">
             <div class="field-group">
               <label>Latitud *</label>
-              <input id="new-lat" type="number" step="any" placeholder="-31.79" />
+              <input id="new-lat" type="text" inputmode="decimal" placeholder="-31.794800" />
             </div>
             <div class="field-group">
               <label>Longitud *</label>
-              <input id="new-lng" type="number" step="any" placeholder="-60.48" />
+              <input id="new-lng" type="text" inputmode="decimal" placeholder="-60.480400" />
             </div>
           </div>
-          <div class="form-row">
-            <div class="field-group">
-              <label>Altitud (ft)</label>
-              <input id="new-alt" type="number" placeholder="0" />
-            </div>
-            <div class="field-group">
-              <label>Zona horaria</label>
-              <input id="new-tz" type="text" placeholder="America/Argentina/Buenos_Aires" />
-            </div>
-          </div>
+
           <button id="btn-add" class="btn btn-primary" onclick="addAirport()">
             <span class="btn-text">✚ Crear aeropuerto</span>
             <span class="btn-spinner hidden"></span>
